@@ -1,598 +1,491 @@
-<!DOCTYPE html>
+from pathlib import Path
+
+html = r'''<!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StreamHub TV — Créateur</title>
 
-  <title>SteamHub-TV</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#08090d;--card:#12151d;--blue:#18a8ff;--pink:#ff3d81;--red:#e51d48;--text:#fff;--muted:#9ca3af}
+body{font-family:Arial,sans-serif;background:var(--bg);color:var(--text);padding-bottom:76px}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.top{position:sticky;top:0;z-index:20;background:rgba(8,9,13,.94);backdrop-filter:blur(12px);padding:14px 16px;border-bottom:1px solid #222631;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:21px;font-weight:800;color:var(--blue)}
+.avatar{width:38px;height:38px;border-radius:50%;border:0;background:#242936;color:#fff}
+.page{display:none;padding:18px 14px;max-width:900px;margin:auto}
+.page.active{display:block}
+.hero{padding:28px 8px}
+.hero h1{font-size:38px;line-height:1.05;margin-bottom:12px}
+.hero h1 span{color:var(--blue)}
+.hero p{color:var(--muted);line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:18px}
+.card{background:var(--card);border:1px solid #222631;border-radius:16px;padding:16px}
+.card h3{margin:8px 0}
+.card p{color:var(--muted);font-size:14px;line-height:1.5}
+.bigbtn{width:100%;border:0;border-radius:12px;padding:14px;background:var(--blue);color:#fff;font-weight:800;margin-top:12px}
+.secondary{background:#242936}
+.pink{background:var(--pink)}
+.section-title{font-size:24px;margin:20px 0 10px}
+.badge{display:inline-block;padding:6px 9px;border-radius:999px;background:#1d2634;color:#9edcff;font-size:12px;margin-bottom:8px}
+.feed{display:grid;gap:16px}
+.video-card{height:68vh;min-height:440px;border-radius:20px;overflow:hidden;background:#000;position:relative;border:1px solid #242936}
+.video-card video{width:100%;height:100%;object-fit:cover;background:#000}
+.video-overlay{position:absolute;left:14px;right:14px;bottom:14px;text-shadow:0 2px 8px #000}
+.video-overlay p{color:#eee;margin-top:6px}
+.actions{position:absolute;right:12px;bottom:80px;display:grid;gap:9px}
+.circle{width:48px;height:48px;border:0;border-radius:50%;background:rgba(20,20,25,.72);color:#fff;font-size:19px}
+.creator{display:flex;align-items:center;gap:10px;margin-top:10px}
+.creator span{color:var(--muted);font-size:13px}
+.creator button{border:0;border-radius:9px;padding:7px 10px;background:var(--pink);color:#fff}
+.creator-tools{background:var(--card);border:1px solid #242936;border-radius:18px;padding:14px}
+.preview{height:430px;background:#000;border-radius:15px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.preview video{width:100%;height:100%;object-fit:contain}
+.file{width:100%;padding:12px;background:#1a1e27;border-radius:10px;color:#fff;margin:10px 0}
+.field{width:100%;padding:13px;margin-top:10px;border-radius:10px;border:1px solid #303642;background:#0d1016;color:#fff}
+.effects{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.effect{padding:10px 5px;border:1px solid #303642;border-radius:10px;background:#171b23;color:#fff;font-size:12px}
+.effect.active{border-color:var(--blue);background:#12344a}
+.fx-normal{filter:none}
+.fx-gray{filter:grayscale(1)}
+.fx-warm{filter:saturate(1.5) sepia(.25) contrast(1.08)}
+.fx-cold{filter:saturate(.8) hue-rotate(18deg) contrast(1.12)}
+.fx-vintage{filter:sepia(.55) contrast(1.08) saturate(.8)}
+.fx-neon{filter:saturate(2) contrast(1.25) brightness(1.08)}
+.price{font-size:27px;font-weight:900;color:#7ee3ff;margin:10px 0}
+.product{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.product .emoji{font-size:42px}
+.bottom{position:fixed;bottom:0;left:0;right:0;z-index:30;background:#0e1118;border-top:1px solid #252a35;display:grid;grid-template-columns:repeat(5,1fr);padding:7px 4px calc(7px + env(safe-area-inset-bottom))}
+.navbtn{border:0;background:none;color:#9ca3af;font-size:11px;padding:6px 2px}
+.navbtn strong{display:block;font-size:21px;margin-bottom:2px}
+.navbtn.active{color:#fff}
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: Arial, sans-serif;
-    }
+/* 🔴 LIVE À PARTIR DE 1 000 ABONNÉS */
+.live-card{margin-top:16px;background:linear-gradient(135deg,#26131a,#141923);border:1px solid #3a2730;border-radius:18px;padding:18px}
+.live-badge{display:inline-block;background:var(--red);color:#fff;padding:7px 10px;border-radius:999px;font-weight:800;font-size:12px}
+.live-count{font-size:30px;font-weight:900;margin:12px 0 4px}
+.live-status{color:#b8c0cc;line-height:1.5}
+.live-button{width:100%;margin-top:14px;padding:14px;border:0;border-radius:12px;background:var(--red);color:#fff;font-weight:800}
+.live-button:disabled{background:#343943;color:#8d95a3;cursor:not-allowed}
+.live-note{margin-top:10px;color:#9ca3af;font-size:12px;line-height:1.45}
+.notice{margin-top:12px;padding:11px;border-radius:10px;background:#151b25;color:#cbd5e1;font-size:13px;line-height:1.5}
 
-    body {
-      background: #0b0b0f;
-      color: white;
-    }
-
-    header {
-      background: #111118;
-      padding: 15px 5%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid #24242d;
-    }
-
-    .logo {
-      font-size: 22px;
-      font-weight: bold;
-      color: #00aaff;
-    }
-
-    nav {
-      display: flex;
-      gap: 20px;
-    }
-
-    nav a {
-      color: white;
-      text-decoration: none;
-    }
-
-    nav a:hover {
-      color: #00aaff;
-    }
-
-    .login {
-      background: #0077ff;
-      padding: 10px 16px;
-      border-radius: 8px;
-      color: white;
-      text-decoration: none;
-    }
-
-    .hero {
-      min-height: 430px;
-      padding: 80px 6%;
-      display: flex;
-      align-items: center;
-      background:
-        linear-gradient(90deg, #08080c 10%, rgba(8,8,12,.75), rgba(8,8,12,.1)),
-        linear-gradient(135deg, #14233c, #09090d);
-    }
-
-    .hero-content {
-      max-width: 600px;
-    }
-
-    .hero h1 {
-      font-size: 48px;
-      margin-bottom: 15px;
-    }
-
-    .hero h1 span {
-      color: #00aaff;
-    }
-
-    .hero p {
-      color: #cccccc;
-      font-size: 18px;
-      line-height: 1.6;
-      margin-bottom: 25px;
-    }
-
-    .watch-button {
-      display: inline-block;
-      background: #00aaff;
-      color: white;
-      text-decoration: none;
-      padding: 13px 22px;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-
-    .section {
-      padding: 35px 6%;
-    }
-
-    .section h2 {
-      margin-bottom: 20px;
-    }
-
-    .search {
-      width: 100%;
-      max-width: 500px;
-      padding: 14px;
-      border: 1px solid #333;
-      border-radius: 8px;
-      background: #15151c;
-      color: white;
-      margin-bottom: 30px;
-      font-size: 16px;
-    }
-
-    .movies {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 18px;
-    }
-
-    .movie {
-      background: #15151c;
-      border-radius: 10px;
-      overflow: hidden;
-      transition: .2s;
-    }
-
-    .movie:hover {
-      transform: translateY(-5px);
-    }
-
-    .poster {
-      height: 220px;
-      background: linear-gradient(145deg, #16466a, #32194d);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 45px;
-    }
-
-    .movie-info {
-      padding: 14px;
-    }
-
-    .movie-info h3 {
-      margin-bottom: 7px;
-    }
-
-    .movie-info p {
-      color: #999;
-      font-size: 14px;
-    }
-
-    .premium {
-      margin-top: 30px;
-      padding: 35px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #132d48, #17132e);
-      text-align: center;
-    }
-
-    .premium h2 {
-      color: #00aaff;
-    }
-
-    .premium p {
-      color: #ccc;
-      margin: 15px 0 20px;
-    }
-
-    .premium-button {
-      display: inline-block;
-      background: #00aaff;
-      color: white;
-      text-decoration: none;
-      padding: 13px 24px;
-      border-radius: 8px;
-      font-weight: bold;
-    }
-
-    footer {
-      margin-top: 40px;
-      padding: 25px;
-      text-align: center;
-      background: #111118;
-      color: #777;
-    }
-
-    @media (max-width: 700px) {
-      header {
-        flex-wrap: wrap;
-        gap: 15px;
-      }
-
-      nav {
-        order: 3;
-        width: 100%;
-        justify-content: center;
-      }
-
-      .hero h1 {
-        font-size: 36px;
-      }
-
-      .hero {
-        min-height: 380px;
-      }
-    }
-  </style>/* FLUX VIDÉO VERTICAL */
-.video-feed {
-  height: 80vh;
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  background: #000;
+@media(min-width:700px){
+.grid{grid-template-columns:repeat(4,1fr)}
+.bottom{max-width:900px;margin:auto;left:50%;transform:translateX(-50%);border-radius:18px 18px 0 0}
+.preview{height:560px}
 }
-
-.video-card {
-  position: relative;
-  height: 80vh;
-  scroll-snap-align: start;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.video-card video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background: #000;
-}
-
-.video-info {
-  position: absolute;
-  left: 15px;
-  bottom: 25px;
-  max-width: 75%;
-  padding: 12px;
-  background: rgba(0,0,0,.55);
-  border-radius: 10px;
-}
-
-.video-info h3 {
-  margin-bottom: 6px;
-  color: white;
-}
-
-.video-info p {
-  color: #ddd;
-}
-
-.video-actions {
-  position: absolute;
-  right: 15px;
-  bottom: 25px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.video-actions button {
-  width: 48px;
-  height: 48px;
-  border: 0;
-  border-radius: 50%;
-  background: rgba(255,255,255,.18);
-  color: white;
-  font-size: 21px;
-}
+</style>
 </head>
 
 <body>
 
-  <header>
-    <div class="logo">🎬 SteamHub-TV</div>
+<header class="top">
+  <div class="logo">🎬 StreamHub TV</div>
+  <button class="avatar" onclick="showPage('plus')">☰</button>
+</header>
 
-    <nav>
-      <a href="#accueil">Accueil</a>
-      <a href="#films">Films</a>
-      <a href="#series">Séries</a>
-      <a href="#premium">Premium</a>
-    </nav>
+<main>
 
-    <a class="login" href="#">Se connecter</a>
-  </header>
+<!-- ACCUEIL -->
+<section id="home" class="page active">
+  <div class="hero">
+    <span class="badge">NOUVELLE GÉNÉRATION</span>
+    <h1>Regarde.<br><span>Crée.</span> Vends.</h1>
+    <p>Une plateforme originale de vidéos courtes, de création, de boutique et de business.</p>
+    <button class="bigbtn" onclick="showPage('create')">➕ Créer une vidéo</button>
+  </div>
 
+  <h2 class="section-title">🔥 Découvrir</h2>
 
-  <main id="accueil">
+  <div class="feed">
+    <article class="video-card">
+      <video controls muted playsinline>
+        <source src="" type="video/mp4">
+      </video>
 
-    <section class="hero">
-      <div class="hero-content">
-        <h1>Bienvenue sur <span>SteamHub-TV</span></h1>
+      <div class="video-overlay">
+        <h3>Bienvenue sur StreamHub TV</h3>
+        <p>Ta prochaine vidéo peut apparaître ici.</p>
 
-        <p>
-          Regarde tes films, séries et programmes préférés
-          depuis une seule plateforme.
-        </p>
-
-        <a class="watch-button" href="#films">
-          ▶ Regarder maintenant
-        </a>
+        <div class="creator">
+          <b>@streamhub</b>
+          <button onclick="alert('Abonnement activé dans la démo.')">Suivre</button>
+        </div>
       </div>
-    </section>
 
-
-    <section class="section" id="films"><section class="section" id="lecteur">
-  <h2>🎬 Lecteur vidéo</h2>
-  <video controls width="100%" style="max-width: 900px;">
-    <source src="video.mp4" type="video/mp4">
-    Votre navigateur ne prend pas en charge la lecture vidéo.
-  </video>
-  </section>
-
-
-      <h2>🔎 Rechercher</h2>
-
-      <input
-        class="search"
-        id="search"
-        type="text"
-        placeholder="Rechercher un film ou une série..."
-        onkeyup="searchMovies()"
-      >
-
-      <h2>🔥 Films populaires</h2>
-
-      <div class="movies" id="movieList">
-
-        <div class="movie">
-          <div class="poster">🎬</div>
-          <div class="movie-info">
-            <h3>Film 1</h3>
-            <p>Action • 2026</p>
-          </div>
-        </div>
-
-        <div class="movie">
-          <div class="poster">🚀</div>
-          <div class="movie-info">
-            <h3>Film 2</h3>
-            <p>Science-fiction • 2026</p>
-          </div>
-        </div>
-
-        <div class="movie">
-          <div class="poster">🦸</div>
-          <div class="movie-info">
-            <h3>Film 3</h3>
-            <p>Aventure • 2026</p>
-          </div>
-        </div>
-
-        <div class="movie">
-          <div class="poster">👽</div>
-          <div class="movie-info">
-            <h3>Film 4</h3>
-            <p>Fantastique • 2026</p>
-          </div>
-        </div>
-
+      <div class="actions">
+        <button class="circle" onclick="this.textContent=this.textContent==='♡'?'♥':'♡'">♡</button>
+        <button class="circle" onclick="alert('Commentaires — fonction serveur à connecter.')">💬</button>
+        <button class="circle" onclick="shareVideo()">↗</button>
       </div>
-    </section>
+    </article>
+  </div>
+</section>
 
+<!-- CRÉER -->
+<section id="create" class="page">
+  <h2>🎥 Créer une vidéo</h2>
+  <p style="color:var(--muted);margin:8px 0 16px">Choisis une vidéo de ton téléphone ou ouvre la caméra.</p>
 
-    <section class="section" id="series">
-      <h2>📺 Séries</h2>
+  <div class="creator-tools">
 
-      <div class="movies"><div class="movie">
-  <div class="poster">📺</div>
-  <div class="movie-info">
-    <h3>Série 1</h3>
-    <p>Saison 1 • Épisode 1</p>
+    <input id="videoFile" class="file" type="file" accept="video/*" capture="environment" onchange="loadVideo(event)">
 
-    <button onclick="playVideo('video.mp4')">
-      ▶ Regarder
+    <div class="preview">
+      <video id="preview" controls playsinline></video>
+    </div>
+
+    <h3 style="margin-top:16px">✨ Effets</h3>
+
+    <div class="effects">
+      <button class="effect active" onclick="applyFx('fx-normal',this)">Normal</button>
+      <button class="effect" onclick="applyFx('fx-gray',this)">Noir & blanc</button>
+      <button class="effect" onclick="applyFx('fx-warm',this)">Chaud</button>
+      <button class="effect" onclick="applyFx('fx-cold',this)">Froid</button>
+      <button class="effect" onclick="applyFx('fx-vintage',this)">Vintage</button>
+      <button class="effect" onclick="applyFx('fx-neon',this)">Neon</button>
+    </div>
+
+    <input id="title" class="field" placeholder="Titre de ta vidéo">
+
+    <select id="category" class="field">
+      <option>😂 Comédie</option>
+      <option>📺 Séries</option>
+      <option>⚽ Football</option>
+      <option>📰 Journal</option>
+      <option>🎵 Musique</option>
+      <option>🎮 Gaming</option>
+      <option>🎥 Autre</option>
+    </select>
+
+    <button class="bigbtn" onclick="publishDemo()">🚀 Publier</button>
+
+    <div class="notice">
+      Démo locale : la vidéo n'est pas encore envoyée à un serveur.
+      La vraie publication nécessitera un stockage vidéo et un compte utilisateur.
+    </div>
+
+  </div>
+</section>
+
+<!-- BOUTIQUE -->
+<section id="shop" class="page">
+  <h2>🛍️ Boutique</h2>
+  <p style="color:var(--muted);margin:8px 0 18px">Une page pour découvrir et vendre des produits.</p>
+
+  <div class="grid">
+
+    <div class="card">
+      <div style="font-size:42px">👕</div>
+      <h3>T-shirt</h3>
+      <p>Produit d'un créateur</p>
+      <div class="price">5 000 F CFA</div>
+      <button class="bigbtn" onclick="alert('Commande de démonstration.')">Acheter</button>
+    </div>
+
+    <div class="card">
+      <div style="font-size:42px">🎧</div>
+      <h3>Accessoire</h3>
+      <p>Produit tendance</p>
+      <div class="price">8 000 F CFA</div>
+      <button class="bigbtn" onclick="alert('Commande de démonstration.')">Acheter</button>
+    </div>
+
+    <div class="card">
+      <div style="font-size:42px">📱</div>
+      <h3>Service vidéo</h3>
+      <p>Montage proposé par un créateur</p>
+      <div class="price">10 000 F CFA</div>
+      <button class="bigbtn" onclick="alert('Commande de démonstration.')">Acheter</button>
+    </div>
+
+    <div class="card">
+      <div style="font-size:42px">🎨</div>
+      <h3>Création</h3>
+      <p>Produit numérique</p>
+      <div class="price">3 000 F CFA</div>
+      <button class="bigbtn" onclick="alert('Commande de démonstration.')">Acheter</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- BUSINESS -->
+<section id="business" class="page">
+  <h2>💼 Business</h2>
+  <p style="color:var(--muted);margin:8px 0 18px">
+    Les créateurs et petites entreprises pourront présenter leurs activités.
+  </p>
+
+  <div class="card">
+    <span class="badge">ESPACE PROFESSIONNEL</span>
+    <h2>Développe ton activité</h2>
+    <p>Crée une vitrine, publie tes vidéos, présente tes produits et reçois des clients.</p>
+
+    <input class="field" placeholder="Nom de ton activité">
+    <input class="field" placeholder="Téléphone ou contact">
+
+    <select class="field">
+      <option>Commerce</option>
+      <option>Service</option>
+      <option>Créateur</option>
+      <option>Restaurant</option>
+      <option>Autre</option>
+    </select>
+
+    <button class="bigbtn pink" onclick="alert('Profil business prêt dans la démo.')">
+      Créer mon espace Business
     </button>
   </div>
-</div>
 
-<div class="movie">
-  <div class="poster">🎭</div>
-  <div class="movie-info">
-    <h3>Série 2</h3>
-    <p>Saison 1 • Épisode 1</p>
+  <!-- LIVE -->
+  <div class="live-card">
+    <span class="live-badge">🔴 LIVE</span>
 
-    <button onclick="playVideo('video.mp4')">
-      ▶ Regarder
+    <div class="live-count">
+      <span id="subscriberCount">0</span> / 1 000 abonnés
+    </div>
+
+    <p id="liveStatus" class="live-status">
+      Atteins 1 000 abonnés pour débloquer la fonction LIVE.
+    </p>
+
+    <button id="liveButton" class="live-button" disabled onclick="startLive()">
+      🔒 LIVE verrouillé
     </button>
+
+    <p class="live-note">
+      Règle SteamHub TV : le LIVE devient disponible à partir de 1 000 abonnés.
+      Le vrai direct nécessitera ensuite un serveur de diffusion en temps réel.
+    </p>
   </div>
-</div>
+</section>
 
-        <div class="movie">
-          <div class="poster">📺</div>
-          <div class="movie-info">
-            <h3>Série 1</h3>
-            <p>Saison 1</p>
-          </div>
-        </div>
+<!-- PLUS -->
+<section id="plus" class="page">
+  <h2>⚙️ Plus</h2>
 
-        <div class="movie">
-          <div class="poster">🎭</div>
-          <div class="movie-info">
-            <h3>Série 2</h3>
-            <p>Saison 1</p>
-          </div>
-        </div>
+  <div class="grid">
 
-      </div>
-    </section>
-
-
-    <section class="section" id="premium"><!-- COMÉDIE -->
-<section class="section" id="comedie">
-  <h2>😂 Comédie</h2>
-
-  <div class="movies">
-
-    <div class="movie">
-      <div class="poster">😂</div>
-      <div class="movie-info">
-        <h3>Comédie 1</h3>
-        <p>Humour • 2026</p>
-        <button onclick="playVideo('video.mp4')">
-          ▶ Regarder
-        </button>
-      </div>
+    <div class="card">
+      <h3>👤 Compte</h3>
+      <p>Profil, abonnements et paramètres.</p>
     </div>
 
-    <div class="movie">
-      <div class="poster">🤣</div>
-      <div class="movie-info">
-        <h3>Comédie 2</h3>
-        <p>Humour • 2026</p>
-        <button onclick="playVideo('video.mp4')">
-          ▶ Regarder
-        </button>
-      </div>
+    <div class="card">
+      <h3>🔔 Notifications</h3>
+      <p>Nouveaux commentaires et abonnés.</p>
+    </div>
+
+    <div class="card">
+      <h3>🛡️ Sécurité</h3>
+      <p>Signaler un contenu et gérer la confidentialité.</p>
+    </div>
+
+    <div class="card">
+      <h3>❓ Aide</h3>
+      <p>Centre d'aide de StreamHub TV.</p>
     </div>
 
   </div>
 </section>
 
+</main>
 
-<!-- FOOTBALL -->
-<section class="section" id="football">
-  <h2>⚽ Football</h2>
+<!-- MENU -->
+<nav class="bottom">
+  <button class="navbtn active" onclick="showPage('home',this)">
+    <strong>⌂</strong>Accueil
+  </button>
 
-  <div class="movies">
+  <button class="navbtn" onclick="showPage('shop',this)">
+    <strong>🛍️</strong>Boutique
+  </button>
 
-    <div class="movie">
-      <div class="poster">⚽</div>
-      <div class="movie-info">
-        <h3>Football 1</h3>
-        <p>Sport • 2026</p>
-        <button onclick="playVideo('video.mp4')">
-          ▶ Regarder
-        </button>
-      </div>
-    </div>
+  <button class="navbtn" onclick="showPage('create',this)">
+    <strong>＋</strong>Créer
+  </button>
 
-    <div class="movie">
-      <div class="poster">🏆</div>
-      <div class="movie-info">
-        <h3>Football 2</h3>
-        <p>Sport • 2026</p>
-        <button onclick="playVideo('video.mp4')">
-          ▶ Regarder
-        </button>
-      </div>
-    </div>
+  <button class="navbtn" onclick="showPage('business',this)">
+    <strong>💼</strong>Business
+  </button>
 
-  </div>
-</section>
+  <button class="navbtn" onclick="showPage('plus',this)">
+    <strong>☰</strong>Plus
+  </button>
+</nav>
 
+<script>
 
-<!-- JOURNAL -->
-<section class="section" id="journal">
-  <h2>📰 Journal</h2>
+function showPage(id,btn){
 
-  <div class="movies">
+  document.querySelectorAll('.page').forEach(function(page){
+    page.classList.remove('active');
+  });
 
-    <div class="movie">
-      <div class="poster">📰</div>
-      <div class="movie-info">
-        <h3>Journal 1</h3>
-        <p>Actualités • 2026</p>
-        <button onclick="playVideo('video.mp4')">
-          ▶ Regarder
-        </button>
-      </div>
-    </div>
+  document.getElementById(id).classList.add('active');
 
-    <div class="movie">
-      <div class="poster">🌍</div>
-      <div class="movie-info">
-        <h3>Journal 2</h3>
-        <p>Actualités • 2026</p>
-        <button onclick="playVideo('video.mp4')">
-          ▶ Regarder
-        </button>
-      </div>
-    </div>
+  document.querySelectorAll('.navbtn').forEach(function(button){
+    button.classList.remove('active');
+  });
 
-  </div>
-</section>
+  if(btn){
+    btn.classList.add('active');
+  }
 
+  window.scrollTo({
+    top:0,
+    behavior:'smooth'
+  });
 
-<!-- AUTRES VIDÉOS -->
-<section class="section" id="autres">
-  <h2>🎥 Autres vidéos</h2>
+}
 
-  <div class="movies">
+function loadVideo(event){
 
-    <div class="movie">
-      <div class="poster">🎥</div>
-      <div class="movie-info">
-        <h3>Vidéo 1</h3>
-        <p>Autre contenu • 2026</p>
-        <button onclick="playVideo('video.mp4')">
-          ▶ Regarder
-        </button>
-      </div>
-    </div>
+  const file = event.target.files[0];
 
-    <div class="movie">
-      <div class="poster">🎞️</div>
-      <div class="movie-info">
-        <h3>Vidéo 2</h3>
-        <p>Autre contenu • 2026</p>
-        <button onclick="playVideo('video.mp4')">
-          ▶ Regarder
-        </button>
-      </div>
-    </div>
+  if(!file){
+    return;
+  }
 
-  </div>
-	</section>
+  const video = document.getElementById('preview');
 
-      <div class="premium">
-        <h2>⭐ SteamHub-TV Premium</h2>
+  video.src = URL.createObjectURL(file);
 
-        <p>
-          Accède aux contenus Premium et profite d'une
-          meilleure expérience de streaming.
-        </p>
+  video.play().catch(function(){});
 
-        <a class="premium-button" href="#">
-          Voir les abonnements
-        </a>
-      </div>
+}
 
-    </section>
+function applyFx(name,btn){
 
-  </main>
+  const video = document.getElementById('preview');
 
+  video.className = name;
 
-  <footer>
-    © 2026 SteamHub-TV — Tous droits réservés.
-  </footer>
+  document.querySelectorAll('.effect').forEach(function(button){
+    button.classList.remove('active');
+  });
 
+  btn.classList.add('active');
 
-  <script>
-    function searchMovies() {
+}
 
-      const input = document
-        .getElementById("search")
-        .value
-        .toLowerCase();
+function publishDemo(){
 
-      const movies = document.querySelectorAll(".movie");
+  const file = document.getElementById('videoFile').files[0];
+  const title = document.getElementById('title').value.trim();
 
-      movies.forEach(function(movie) {
+  if(!file){
+    alert('Choisis d’abord une vidéo.');
+    return;
+  }
 
-        const title = movie
-          .querySelector("h3")
-          .textContent
-          .toLowerCase();
+  if(!title){
+    alert('Ajoute un titre.');
+    return;
+  }
 
-        if (title.includes(input)) {
-          movie.style.display = "block";
-        } else {
-          movie.style.display = "none";
-        }
+  alert(
+    '🎉 Vidéo préparée !\n\n' +
+    'Titre : ' + title +
+    '\n\nLa publication en ligne sera activée après connexion du serveur.'
+  );
 
-      });
-    }
-  </script>
+}
+
+/* PARTAGE */
+
+function shareVideo(){
+
+  if(navigator.share){
+
+    navigator.share({
+      title:'StreamHub TV',
+      text:'Regarde cette vidéo sur StreamHub TV'
+    });
+
+  }else{
+
+    alert('Le partage est disponible sur les appareils compatibles.');
+
+  }
+
+}
+
+/* 🔴 LIVE À PARTIR DE 1 000 ABONNÉS */
+
+const DEMO_SUBSCRIBERS = 0;
+
+function updateLiveAccess(){
+
+  const count = DEMO_SUBSCRIBERS;
+
+  const countEl = document.getElementById('subscriberCount');
+  const statusEl = document.getElementById('liveStatus');
+  const buttonEl = document.getElementById('liveButton');
+
+  if(!countEl || !statusEl || !buttonEl){
+    return;
+  }
+
+  countEl.textContent = count.toLocaleString('fr-FR');
+
+  if(count >= 1000){
+
+    statusEl.textContent =
+      '🎉 Tu as atteint 1 000 abonnés. Le LIVE est débloqué.';
+
+    buttonEl.disabled = false;
+
+    buttonEl.textContent =
+      '🔴 Démarrer un LIVE';
+
+  }else{
+
+    statusEl.textContent =
+      'Atteins 1 000 abonnés pour débloquer la fonction LIVE.';
+
+    buttonEl.disabled = true;
+
+    buttonEl.textContent =
+      '🔒 LIVE verrouillé';
+
+  }
+
+}
+
+function startLive(){
+
+  const count = DEMO_SUBSCRIBERS;
+
+  if(count < 1000){
+
+    alert(
+      '🔒 Le LIVE est disponible à partir de 1 000 abonnés.'
+    );
+
+    return;
+  }
+
+  alert(
+    '🔴 LIVE prêt !\n\n' +
+    'Le serveur de diffusion devra être connecté pour démarrer un vrai direct.'
+  );
+
+}
+
+updateLiveAccess();
+
+</script>
 
 </body>
-	</html>
+</html>
+'''
+
+path = Path("/mnt/data/streamhub_tv_creator_live_1000.html")
+path.write_text(html, encoding="utf-8")
+print(path)
